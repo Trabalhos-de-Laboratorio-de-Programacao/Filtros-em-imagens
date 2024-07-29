@@ -1,4 +1,5 @@
 from tkinter import *
+from src.filtros import *
 
 class App(Tk):
     def __init__(self):
