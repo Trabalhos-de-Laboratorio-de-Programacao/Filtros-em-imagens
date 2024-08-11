@@ -47,7 +47,7 @@ class Download:
             print(f"Erro na conexão: {e}")
             raise Exception(f"Erro na conexão: {e}")
         
-    def get_next_image_number(directory):
+    def get_next_image_number(self, directory):
         existing_files = os.listdir(directory)
         image_number = 0
         for f in existing_files: # Percorre os arquivos do diretório imagens
@@ -62,6 +62,7 @@ class Download:
             if not os.path.exists(directory):
                 os.makedirs(directory)
             next_number = self.get_next_image_number(directory)
+            file_extension = os.path.splitext(self.path_arquivo)[1][1:]
             file_name = f"image-{next_number}.{file_extension}"
             destination_path = os.path.join(directory, file_name)
             with open(self.path_arquivo, 'rb') as file:

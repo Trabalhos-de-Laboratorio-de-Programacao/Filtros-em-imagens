@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import filedialog, simpledialog
+from tkinter import filedialog, simpledialog, messagebox
 from src.download import *
 from src.imagem import *
 
@@ -47,59 +47,35 @@ class App(Tk):
 
     def load_image(self):
         # Criar uma nova janela
-        carregar_imagem_window = Toplevel(self)
-        carregar_imagem_window.title("Carregar Imagem")
+        self.carregar_imagem_window = Toplevel(self)
+        self.carregar_imagem_window.title("Carregar Imagem")
         
         # Botão para carregar arquivo local
-        load_local_button = Button(carregar_imagem_window, text="Carregar arquivo local", command=self.load_local_file)
+        load_local_button = Button(self.carregar_imagem_window, text="Carregar arquivo local", command=self.load_local_file)
         load_local_button.pack()
 
         # Botão para download de URL
-        download_url_button = Button(carregar_imagem_window, text="Download URL", command=self.download_url)
+        download_url_button = Button(self.carregar_imagem_window, text="Download URL", command=self.download_url)
         download_url_button.pack()
         
     def load_local_file(self):
         caminho = filedialog.askopenfilename(filetypes=[("Imagens", "*.jpg *.jpeg *.png")])
         if caminho:
-            save_image(caminho, False)
-        
-    def download_url(self):
-        url = simpledialog.askstring("Input", "Digite a URL da imagem:", parent=self)
-        if url:
-            self.download_with_progress_bar(url)
+            download = Download(path_arquivo=caminho)
+            download.executa()
             return True
         messagebox.showerror("Erro", "URL vazia")
         return False
-
-    def download_with_progress_bar(self,url, path_arquivo=None):
-        try:
-            nome, extensao = self.utilidades.extrair_nome_extensao_url(url)
-            filename = nome + extensao
-            self.set_filename(filename)
-            
-            if path_arquivo: 
-                download = Download(url, path_arquivo)
-            else:
-                download = Download(url, filename)
-
-            def progress_callback(total_size, current_progress):
-                percentual_avanco = int((current_progress/total_size)*100)
-                self.my_var.set(str(int(percentual_avanco)) + '%')
-                self.progress_bar["value"] = current_progress
-                self.progress_bar["maximum"] = total_size
-                self.app.update_idletasks()  # Update the progress bar smoothly
-
-            download.set_callback(progress_callback)
-            self.my_msg.set('Aguarde...')
-            url = download.executa()
-            file_path = save_image(url, True)
-            self.my_msg.set(f'Download {self.filename} concluído com sucesso!')
-        except Exception as ex:
-            print(f'Erro: {str(ex)}')
-            self.my_msg.set(f'Erro :{str(ex)}')
-            self.my_var.set('0%')
-            self.progress_bar['value'] = 0
-
+        
+    def download_url(self):
+        caminho = simpledialog.askstring("Input", "Digite a URL da imagem:", parent=self.carregar_imagem_window)
+        if caminho:
+            download = Download(url=caminho)
+            download.executa()
+            return True
+        messagebox.showerror("Erro", "URL vazia")
+        return False
+    
     def process_image(self, file_path):
         # Process the image using the Imagem class
         img = Imagem(file_path)
