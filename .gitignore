@@ -15,6 +15,7 @@ __pycache__/
 
 # Ignore diretórios de saída
 imagens/filtradas/
+imagens/
 
 # Ignore arquivos de configuração do sistema operacional
 .DS_Store
