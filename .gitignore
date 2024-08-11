@@ -1,0 +1,25 @@
+# Ignore arquivos de cache do Python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Ignore arquivos de cache do Jupyter Notebook
+.ipynb_checkpoints
+
+# Ignore arquivos de log
+*.log
+
+# Ignore arquivos temporários
+*.tmp
+*.temp
+
+# Ignore diretórios de saída
+imagens/filtradas/
+
+# Ignore arquivos de configuração do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Ignore arquivos de ambiente virtual
+venv/
+env/
