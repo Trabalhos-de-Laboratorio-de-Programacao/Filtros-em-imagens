@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import filedialog, simpledialog
-from src.download import download_image
-from src.imagem import Imagem
+from src.download import *
+from src.imagem import *
 
 class App(Tk):
     def __init__(self):
@@ -24,16 +24,30 @@ class App(Tk):
         self.config(menu=menu_bar)
 
     def load_image(self):
-        choice = simpledialog.askstring("Input", "Digite 'local' para carregar uma imagem local ou 'url' para carregar uma imagem da internet:")
-        if choice == 'local':
-            file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.png")])
-            if file_path:
-                self.process_image(file_path)
-        elif choice == 'url':
-            url = simpledialog.askstring("Input", "Digite a URL da imagem:")
-            if url:
-                file_path = download_image(url)
-                #self.process_image(file_path)
+        # Criar uma nova janela
+        carregar_imagem_window = Toplevel(self)
+        carregar_imagem_window.title("Carregar Imagem")
+        
+        # Botão para carregar arquivo local
+        load_local_button = Button(carregar_imagem_window, text="Carregar arquivo local", command=self.load_local_file)
+        load_local_button.pack()
+
+        # Botão para download de URL
+        download_url_button = Button(carregar_imagem_window, text="Download URL", command=self.download_url)
+        download_url_button.pack()
+        
+    def load_local_file(self):
+        caminho = filedialog.askopenfilename(filetypes=[("Imagens", "*.jpg *.jpeg *.png")])
+        if caminho:
+            save_image(caminho, False)
+        
+    def download_url(self):
+        url = simpledialog.askstring("Input", "Digite a URL da imagem:", parent=self)
+        if url:
+            file_path = save_image(url, True)
+            return True
+        messagebox.showerror("Erro", "URL vazia")
+        return False
 
     def process_image(self, file_path):
         # Process the image using the Imagem class
