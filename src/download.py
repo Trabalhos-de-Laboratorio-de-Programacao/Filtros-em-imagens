@@ -1,54 +1,35 @@
 import requests
+from tqdm import tqdm  # progress bar
 import os
-import base64
-import re
 
-def save_image(caminho, online):
-    def get_next_image_number(directory):
-        existing_files = os.listdir(directory)
-        image_number = 0
-        for f in existing_files: # Percorre os arquivos do diretório imagens
-            match = re.search(r'image-(\d+)', f)
-            if match: # Verifica apenas os arquivos iniciados por "image-"
-                image_number += 1
-        return image_number + 1
+class Download:
+    def __init__(self, url, path_arquivo):
+        self.url = url
+        self.path_arquivo = path_arquivo
+        self.callback = None # Function to be called for progress updates
 
-    if online:
-        if caminho.startswith("data:image/"):
-            # Imagem em base64
-            header, encoded = caminho.split(",", 1)
-            file_extension = header.split("/")[1].split(";")[0]
-            directory = "imagens"
-            next_number = get_next_image_number(directory)
-            file_name = f"image-{next_number}.{file_extension}"
-            file_path = os.path.join(directory, file_name)
-            
-            with open(file_path, 'wb') as file:
-                file.write(base64.b64decode(encoded))
-            return file_path
-        else:
-            # Imagem online
-            response = requests.get(caminho)
-            if response.status_code == 200:
-                directory = "imagens"
-                next_number = get_next_image_number(directory)
-                file_extension = caminho.split(".")[-1]
-                file_name = f"image-{next_number}.{file_extension}"
-                file_path = os.path.join(directory, file_name)
-                
-                with open(file_path, 'wb') as file:
-                    file.write(response.content)
-                return file_path
-            else:
-                return None
-    elif not online:
-        # Imagem local
-        directory = "imagens"
-        next_number = get_next_image_number(directory)
-        file_name = f"image-{next_number}.png"
-        file_path = os.path.join(directory, file_name)
-        
-        with open(caminho, 'rb') as file:
-            with open(file_path, 'wb') as new_file:
-                new_file.write(file.read())
-        return file_path
+    def set_callback(self, callback):
+        self.callback = callback
+
+    def executa(self):
+        try:
+            print('Aguarde...')
+            response = requests.get(self.url, stream=True)  # Habilita streaming para progresso
+            response.raise_for_status()  # Verifica se houve algum erro na requisição
+            total_size = int(response.headers.get('content-length', 0))  # Tamanho total do arquivo
+            with open(self.path_arquivo, 'wb') as file:
+                with tqdm(total=total_size, unit='B', unit_scale=True, desc=self.path_arquivo) as pbar:
+                    for chunk in response.iter_content(chunk_size=1024):
+                        if chunk:
+                            file.write(chunk)
+                            pbar.update(len(chunk))
+                            if self.callback:
+                                self.callback(total_size, pbar.n)  # Chama o callback com o tamanho total e o progresso atual
+            print(f"Download completo. Tamanho: {total_size}, Arquivo salvo em: {self.path_arquivo}")
+            return self.url
+        except requests.exceptions.MissingSchema:
+            print("URL inválida. Certifique-se de fornecer uma URL válida.")
+            raise Exception('URL inválida. Certifique-se de fornecer uma URL válida.')
+        except requests.exceptions.RequestException as e:
+            print(f"Erro na conexão: {e}")
+            raise Exception(f"Erro na conexão: {e}")
