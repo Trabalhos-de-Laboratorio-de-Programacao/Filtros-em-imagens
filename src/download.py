@@ -22,7 +22,7 @@ class Download:
                 return self.save_image_from_base64()
         elif self.path_arquivo:
             if self.path_arquivo[-4:] == ".txt": # Se for feito upload de uma arquivo .txt
-                self.download_arquivos_txt()
+                return self.download_arquivos_txt()
             else:
                 return self.save_local_file()
         else:
@@ -41,7 +41,7 @@ class Download:
             file_name = f"image-{next_number}.{file_extension}"
             destination_path = os.path.join(directory, file_name)
             self.progress_bar(destination_path, total_size, response)
-            return self.url
+            return destination_path
         except requests.exceptions.MissingSchema:
             messagebox.showerror("ERRO", "URL inválida. Certifique-se de fornecer uma URL válida.")
             raise Exception('URL inválida. Certifique-se de fornecer uma URL válida.')
@@ -50,17 +50,31 @@ class Download:
             raise Exception(f"Erro na conexão: {e}")
         
     def progress_bar(self, destination_path, total_size, response = None):
-        with open(destination_path, 'wb') as file:
-            with tqdm(total=total_size, unit='B', unit_scale=True, desc=destination_path) as pbar:
-                for chunk in response.iter_content(chunk_size=1024):
-                    if chunk:
-                        if self.url.startswith("data:image/"):
-                            file.write(base64.b64decode(encoded))
-                        else:
-                            file.write(chunk)
-                        pbar.update(len(chunk))
-                        if self.callback:
-                            self.callback(total_size, pbar.n)  # Chama o callback com o tamanho total e o progresso atual
+        if self.url: # Arquivo online
+            with open(destination_path, 'wb') as file:
+                with tqdm(total=total_size, unit='B', unit_scale=True, desc=destination_path) as pbar:
+                    for chunk in response.iter_content(chunk_size=1024):
+                        if chunk:
+                            if self.url.startswith("data:image/"):
+                                file.write(base64.b64decode(encoded))
+                            else:
+                                file.write(chunk)
+                            pbar.update(len(chunk))
+                            if self.callback:
+                                self.callback(total_size, pbar.n)  # Chama o callback com o tamanho total e o progresso atual
+        elif self.path_arquivo: # Arquivo local
+            with open(destination_path, 'wb') as new_file:
+                with open(self.path_arquivo, 'rb') as file:
+                    with tqdm(total=total_size, unit='B', unit_scale=True, desc=destination_path) as pbar:
+                        while True:
+                            chunk = file.read(1024)
+                            if not chunk:
+                                break
+                            new_file.write(chunk)
+                            pbar.update(len(chunk))
+                            if self.callback:
+                                self.callback(total_size, pbar.n)  # Chama o callback com o tamanho total e o progresso atual
+                new_file.flush()
         
     def get_next_image_number(self, directory):
         existing_files = os.listdir(directory)
@@ -74,9 +88,12 @@ class Download:
     def download_arquivos_txt(self):
         with open(self.path_arquivo, 'r') as file:
             links = file.read().splitlines()
+        destinos = []
         for link in links:
             download_url = Download(url = link)
-            download_url.executa()
+            destinos.append(download_url.executa())
+        destinos = '\n'.join(destinos) # Concatena caminhos dos arquivos criados
+        return destinos
 
     def save_local_file(self):
         try:

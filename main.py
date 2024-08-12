@@ -16,7 +16,13 @@ class App(Tk):
         
         # Menu
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Carregar Imagem", command=self.load_image)
+        
+        # Submenu "Carregar Imagem"
+        load_image_menu = Menu(file_menu, tearoff=0)
+        load_image_menu.add_command(label="Carregar Arquivo Local", command=self.load_local_file)
+        load_image_menu.add_command(label="Download URL", command=self.download_url)
+        
+        file_menu.add_cascade(label="Carregar Imagem", menu=load_image_menu) # file_menu contém load_image_menu
         file_menu.add_separator()
         file_menu.add_command(label="Sair", command=self.quit)
         menu_bar.add_cascade(label="Arquivo", menu=file_menu)
@@ -62,7 +68,9 @@ class App(Tk):
         caminho = filedialog.askopenfilename(filetypes=[("Imagens", "*.jpg *.jpeg *.png"), ("URLs", "*.txt")])
         if caminho:
             download = Download(path_arquivo=caminho)
-            download.executa()
+            execucao = download.executa()
+            if execucao:
+                messagebox.showinfo("SUCESSO", f"Arquivo salvo em:\n{execucao}")
             return True
         messagebox.showerror("Erro", "URL vazia")
         return False
