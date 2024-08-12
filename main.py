@@ -62,13 +62,12 @@ class App(Tk):
         
         self.config(menu=menu_bar)
         
-        # Frame dos thumbnails
-        self.thumbnail_frame = Frame(self, width=200)
-        self.thumbnail_frame.pack(side=LEFT, fill=Y) # Com fill ocupa todo o espaço vertical
-        
         self.load_thumbnails()
         
     def load_thumbnails(self):        
+        # Frame dos thumbnails
+        self.thumbnail_frame = Frame(self, width=200)
+        self.thumbnail_frame.pack(side=LEFT, fill=Y) # Com fill ocupa todo o espaço vertical
          # Create a canvas for scrolling
         self.canvas = Canvas(self.thumbnail_frame)
         self.canvas.config(width=150, height=320)
@@ -110,11 +109,9 @@ class App(Tk):
         self.inner_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
     
     def refresh_thumbnails(self):
-        # Lógica para atualizar os thumbnails
-        # Por exemplo, limpar e recarregar os thumbnails
-        for widget in self.inner_frame.winfo_children():
-            widget.destroy()
-        self.load_thumbnails()  # Supondo que exista uma função para carregar os thumbnails
+        # Atualizar os thumbnails
+        self.thumbnail_frame.pack_forget()
+        self.load_thumbnails()
         
     def select_image(self, image_path):
         image_name = os.path.basename(image_path) # Armazena o nome da imagem para que seja exibido ao abrir
@@ -154,9 +151,18 @@ class App(Tk):
         return
 
     def delete_image(self, image_path):
-        # Implementar lógica para excluir a imagem
+        try:
+            if os.path.exists(image_path):
+                os.remove(image_path)
+                messagebox.showinfo("SUCESSO", f"Imagem {image_path} excluída com sucesso.")
+                # Atualizar a interface do usuário
+                # self.refresh_thumbnails()
+            else:
+                messagebox.showerror("Erro", f"Imagem {image_path} não encontrada.")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Não foi possível excluir a imagem: {str(e)}")
         return
-        
+    
     def load_local_file(self):
         caminho = filedialog.askopenfilename(filetypes=[("Imagens", "*.jpg *.jpeg *.png"), ("URLs", "*.txt")])
         if caminho:
@@ -164,6 +170,7 @@ class App(Tk):
             execucao = download.executa()
             if execucao:
                 messagebox.showinfo("SUCESSO", f"Arquivo salvo em:\n{execucao}")
+            # self.refresh_thumbnails()
             return True
         messagebox.showerror("Erro", "URL vazia")
         return False
@@ -173,6 +180,7 @@ class App(Tk):
         if caminho:
             download = Download(url=caminho)
             download.executa()
+            # self.refresh_thumbnails()
             return True
         messagebox.showerror("Erro", "URL vazia")
         return False
