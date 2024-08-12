@@ -1,5 +1,6 @@
 import requests
 import os
+from tkinter import messagebox
 import base64
 import re
 from tqdm import tqdm
@@ -20,32 +21,46 @@ class Download:
             elif self.url.startswith("data:image/"):
                 return self.save_image_from_base64()
         elif self.path_arquivo:
-            return self.save_local_file()
+            if self.path_arquivo[-4:] == ".txt": # Se for feito upload de uma arquivo .txt
+                self.download_arquivos_txt()
+            else:
+                return self.save_local_file()
         else:
             raise Exception("Nenhuma URL ou caminho de arquivo fornecido.")
 
     def download_from_url(self):
         try:
-            print('Aguarde...')
             response = requests.get(self.url, stream=True)  # Habilita streaming para progresso
             response.raise_for_status()  # Verifica se houve algum erro na requisição
             total_size = int(response.headers.get('content-length', 0))  # Tamanho total do arquivo
-            with open(self.path_arquivo, 'wb') as file:
-                with tqdm(total=total_size, unit='B', unit_scale=True, desc=self.path_arquivo) as pbar:
-                    for chunk in response.iter_content(chunk_size=1024):
-                        if chunk:
-                            file.write(chunk)
-                            pbar.update(len(chunk))
-                            if self.callback:
-                                self.callback(total_size, pbar.n)  # Chama o callback com o tamanho total e o progresso atual
-            print(f"Download completo. Tamanho: {total_size}, Arquivo salvo em: {self.path_arquivo}")
+            directory = "imagens"
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            next_number = self.get_next_image_number(directory)
+            file_extension = os.path.splitext(self.url)[-1][1:]
+            file_name = f"image-{next_number}.{file_extension}"
+            destination_path = os.path.join(directory, file_name)
+            self.progress_bar(destination_path, total_size, response)
             return self.url
         except requests.exceptions.MissingSchema:
-            print("URL inválida. Certifique-se de fornecer uma URL válida.")
+            messagebox.showerror("ERRO", "URL inválida. Certifique-se de fornecer uma URL válida.")
             raise Exception('URL inválida. Certifique-se de fornecer uma URL válida.')
         except requests.exceptions.RequestException as e:
-            print(f"Erro na conexão: {e}")
+            messagebox.showerror("ERRO", f"Erro na conexão: {e}")
             raise Exception(f"Erro na conexão: {e}")
+        
+    def progress_bar(self, destination_path, total_size, response = None):
+        with open(destination_path, 'wb') as file:
+            with tqdm(total=total_size, unit='B', unit_scale=True, desc=destination_path) as pbar:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        if self.url.startswith("data:image/"):
+                            file.write(base64.b64decode(encoded))
+                        else:
+                            file.write(chunk)
+                        pbar.update(len(chunk))
+                        if self.callback:
+                            self.callback(total_size, pbar.n)  # Chama o callback com o tamanho total e o progresso atual
         
     def get_next_image_number(self, directory):
         existing_files = os.listdir(directory)
@@ -55,6 +70,13 @@ class Download:
             if match: # Verifica apenas os arquivos iniciados por "image-"
                 image_number += 1
         return image_number + 1
+    
+    def download_arquivos_txt(self):
+        with open(self.path_arquivo, 'r') as file:
+            links = file.read().splitlines()
+        for link in links:
+            download_url = Download(url = link)
+            download_url.executa()
 
     def save_local_file(self):
         try:
@@ -65,9 +87,9 @@ class Download:
             file_extension = os.path.splitext(self.path_arquivo)[1][1:]
             file_name = f"image-{next_number}.{file_extension}"
             destination_path = os.path.join(directory, file_name)
+            total_size = os.path.getsize(self.path_arquivo)
             with open(self.path_arquivo, 'rb') as file:
-                with open(destination_path, 'wb') as new_file:
-                    new_file.write(file.read())
+                self.progress_bar(destination_path, total_size)
             return destination_path
         except Exception as e:
             raise Exception(f"Erro ao salvar arquivo local: {e}")
@@ -82,8 +104,7 @@ class Download:
             file_name = f"image-{next_number}.{file_extension}"
             file_path = os.path.join(directory, file_name)
             
-            with open(file_path, 'wb') as file:
-                file.write(base64.b64decode(encoded))
+            self.progress_bar(destination_path, total_size)
                 
             return file_path
         

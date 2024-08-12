@@ -27,7 +27,7 @@ class App(Tk):
         self.thumbnail_frame = Frame(self, width=200)
         self.thumbnail_frame.pack(side=LEFT, fill=Y) # Com fill ocupa todo o espaço vertical
         
-        self.load_thumbnails()
+        #self.load_thumbnails()
         
     def load_thumbnails(self):
         image_folder = 'imagens'
@@ -39,7 +39,7 @@ class App(Tk):
                 image_path = os.path.join(image_folder, image_file)
                 img = Image.open(image_path)
                 img.thumbnail((100, 100))
-                img = ImageTk.PhotoImage(img)
+                img = Image.PhotoImage(img)
                 
                 btn = Button(self.thumbnail_frame, image=img, command=lambda p=image_path: self.select_image(p))
                 btn.image = img  # Keep a reference to avoid garbage collection
@@ -59,7 +59,7 @@ class App(Tk):
         download_url_button.pack()
         
     def load_local_file(self):
-        caminho = filedialog.askopenfilename(filetypes=[("Imagens", "*.jpg *.jpeg *.png")])
+        caminho = filedialog.askopenfilename(filetypes=[("Imagens", "*.jpg *.jpeg *.png"), ("URLs", "*.txt")])
         if caminho:
             download = Download(path_arquivo=caminho)
             download.executa()
