@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from skimage import filters, color, exposure
 
-class grayscale:
+class GrayScale:
     def __init__(self, image):
         self.image = np.array(image)
 
@@ -19,7 +19,7 @@ class grayscale:
         return self.image
 
 
-class blackAndWhite:
+class BlackWhite:
     def __init__(self, image):
         self.image = np.array(image)
 
@@ -38,7 +38,7 @@ class blackAndWhite:
         return self.image
 
 
-class cartoon:
+class Cartoon:
     def __init__(self, image):
         self.image = np.array(image)
 
@@ -59,7 +59,7 @@ class cartoon:
 
 
 
-class negative:
+class Negative:
     def __init__(self, image):
         self.image = np.array(image)
 
@@ -71,7 +71,7 @@ class negative:
         return self.image
 
 
-class contour:
+class Contour:
     def __init__(self, image):
         self.image = np.array(image)
 
@@ -86,7 +86,7 @@ class contour:
         return self.image
 
 
-class blurred:
+class Blur:
     def __init__(self, image):
         self.image = np.array(image)
 

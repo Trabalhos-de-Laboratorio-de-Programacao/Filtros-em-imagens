@@ -62,11 +62,12 @@ class AplicaFiltro:
         return nome
     
     def aplica_filtro_fullhd(self, minha_imagem, nome):
-        directory = 'filtradas'
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        fullhd_filter = FullHD(minha_imagem)
-        filtered_image_fullhd = fullhd_filter.applyFilter()
-        nome = os.path.join('filtradas', nome + '_FullHD.jpg')
-        filtered_image_fullhd.save(nome)
-        return nome
+        return
+    #     directory = 'filtradas'
+    #     if not os.path.exists(directory):
+    #         os.makedirs(directory)
+    #     fullhd_filter = FullHD(minha_imagem)
+    #     filtered_image_fullhd = fullhd_filter.applyFilter()
+    #     nome = os.path.join('filtradas', nome + '_FullHD.jpg')
+    #     filtered_image_fullhd.save(nome)
+    #     return nome
