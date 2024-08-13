@@ -111,7 +111,7 @@ class App(Tk):
         self.canvas_filtro.config(yscrollcommand=self.scrollbar_filtro.set)
         
         # Bind mouse wheel event to canvas
-        self.canvas_filtro.bind_all("<MouseWheel>", self._on_mouse_wheel_filtro)
+        self.canvas_filtro.bind_all("<MouseWheel>", self._on_mouse_wheel)
 
         # Create inner frame to hold buttons (avoid directly adding to canvas)
         self.inner_frame_filtro = Frame(self.canvas_filtro)
@@ -119,20 +119,16 @@ class App(Tk):
         self.display_thumbnails_filtro()  # Separate function to display the buttons
         
     def _on_mouse_wheel(self, event):
-        if self.thumbnail_frame.winfo_containing(event.x_root, event.y_root) == self.thumbnail_frame or self.canvas.winfo_containing(event.x_root, event.y_root) == self.canvas:
-            self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-            
-    def _on_mouse_wheel_filtro(self, event):
-        if self.thumbnail_filtro_frame.winfo_containing(event.x_root, event.y_root) == self.thumbnail_filtro_frame or self.canvas_filtro.winfo_containing(event.x_root, event.y_root) == self.canvas_filtro:
-            self.canvas_filtro.yview_scroll(int(-1*(event.delta/120)), "units")
+        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        self.canvas_filtro.yview_scroll(int(-1*(event.delta/120)), "units")
                 
     def display_thumbnails(self):
         for i, image_path in enumerate(self.image_paths):
             image_name = os.path.basename(image_path)
             # Cria um thumbnail usando PIL
             # thumbnail = Image.open(image_path).resize((100, 100), Image.ANTIALIAS) # IMCOMPATÍVEL
-            self.imagem = Imagem(i, image_name, image_path)
-            thumbnail = self.imagem.conteudo().resize((150, 100), Image.Resampling.LANCZOS)
+            imagem = Imagem(i, image_name, image_path)
+            thumbnail = imagem.conteudo().resize((150, 100), Image.Resampling.LANCZOS)
             thumbnail_photo = ImageTk.PhotoImage(thumbnail)
             # Cria um botão com o thumbnail e caminho do arquivo
             thumbnail_button = Button(self.inner_frame, image=thumbnail_photo, command=lambda path=image_path: self.select_image(path))
@@ -189,7 +185,7 @@ class App(Tk):
         if hasattr(self, 'action_frame') and self.action_frame is not None:
             self.action_frame.destroy()
             
-        imagem = Imagem(None, image_name, image_path)
+        self.imagem = Imagem(None, image_name, image_path)
         
         # Cria um novo frame ao lado dos thumbnails
         self.action_frame = Frame(self, width=200, height=100)
@@ -204,7 +200,7 @@ class App(Tk):
         self.open_button.pack(pady=5)
         
         # Botão "Exibir informações"
-        self.info_button = Button(self.action_frame, text="Informações", command=lambda: imagem.informacoes())
+        self.info_button = Button(self.action_frame, text="Informações", command=lambda: self.imagem.informacoes())
         self.info_button.pack(pady=5)
         
         # Botão "Aplicar Filtro"
@@ -221,7 +217,7 @@ class App(Tk):
         if hasattr(self, 'action_frame_filtro') and self.action_frame_filtro is not None:
             self.action_frame_filtro.destroy()
             
-        imagem = Imagem(None, image_name, image_path)
+        self.imagem_filtro = Imagem(None, image_name, image_path)
         
         # Cria um novo frame ao lado dos thumbnails
         self.action_frame_filtro = Frame(self, width=200, height=100)
@@ -236,7 +232,7 @@ class App(Tk):
         self.open_button_filtro.pack(pady=5)
         
         # Botão "Exibir informações"
-        self.info_button_filtro = Button(self.action_frame_filtro, text="Informações", command=lambda: imagem.informacoes())
+        self.info_button_filtro = Button(self.action_frame_filtro, text="Informações", command=lambda: self.imagem_filtro.informacoes())
         self.info_button_filtro.pack(pady=5)
         
         # Botão "Excluir"
@@ -321,6 +317,14 @@ class App(Tk):
 
     def delete_image(self, image_path):
         try:
+            try:
+                self.imagem.minha_imagem.close()
+            except:
+                try:
+                    self.imagem_filtro.minha_imagem.close()
+                except:
+                    self.imagem.minha_imagem.close()
+                    
             if os.path.exists(image_path):
                 os.remove(image_path)
                 self.image_paths.remove(image_path)
