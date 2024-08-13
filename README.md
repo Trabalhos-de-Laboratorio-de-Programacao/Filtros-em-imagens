@@ -1,1 +1,0 @@
-# Filtros-em-imagens
