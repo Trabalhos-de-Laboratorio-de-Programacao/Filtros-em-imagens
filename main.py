@@ -46,10 +46,10 @@ class App(Tk):
     def create_widgets(self):
         # Menu
         menu_bar = Menu(self)
-        file_menu = Menu(menu_bar, tearoff=0)
+        file_menu = Menu(menu_bar, tearoff=0, bg='lightgrey', fg='black')
         
         # Submenu "Carregar Imagem"
-        load_image_menu = Menu(file_menu, tearoff=0)
+        load_image_menu = Menu(file_menu, tearoff=0, bg='lightgrey', fg='black')
         load_image_menu.add_command(label="Carregar Arquivo Local", command=self.load_local_file)
         load_image_menu.add_command(label="Download URL", command=self.download_url)
         
@@ -112,16 +112,21 @@ class App(Tk):
     
     def refresh_thumbnails(self):
         # Atualizar os thumbnails
-        self.thumbnail_frame.pack_forget()
+        if hasattr(self, 'filter_frame') and self.filter_frame is not None:
+            self.filter_frame.destroy()
+        if hasattr(self, 'action_frame') and self.action_frame is not None:
+            self.action_frame.destroy()
+        if hasattr(self, 'thumbnail_frame') and self.thumbnail_frame is not None:
+            self.thumbnail_frame.destroy()
         self.load_thumbnails()
         
     def select_image(self, image_path):
         image_name = os.path.basename(image_path) # Armazena o nome da imagem para que seja exibido ao abrir
         # Remove o frame anterior, se existir
-        if hasattr(self, 'action_frame') and self.action_frame is not None:
-            self.action_frame.destroy()
         if hasattr(self, 'filter_frame') and self.filter_frame is not None:
             self.filter_frame.destroy()
+        if hasattr(self, 'action_frame') and self.action_frame is not None:
+            self.action_frame.destroy()
         
         # Cria um novo frame ao lado dos thumbnails
         self.action_frame = Frame(self, width=200, height=100)
@@ -197,14 +202,14 @@ class App(Tk):
         try:
             if os.path.exists(image_path):
                 os.remove(image_path)
+                self.image_paths.remove(image_path)
                 messagebox.showinfo("SUCESSO", f"Imagem {image_path} excluída com sucesso.")
                 # Atualizar a interface do usuário
-                # self.refresh_thumbnails()
+                self.refresh_thumbnails()
             else:
                 messagebox.showerror("Erro", f"Imagem {image_path} não encontrada.")
         except Exception as e:
             messagebox.showerror("Erro", f"Não foi possível excluir a imagem: {str(e)}")
-        return
     
     def load_local_file(self):
         caminho = filedialog.askopenfilename(filetypes=[("Imagens", "*.jpg *.jpeg *.png"), ("URLs", "*.txt")])
@@ -212,18 +217,19 @@ class App(Tk):
             download = Download(path_arquivo=caminho)
             execucao = download.executa()
             if execucao:
+                self.image_paths.append(execucao)
                 messagebox.showinfo("SUCESSO", f"Arquivo salvo em:\n{execucao}")
-            # self.refresh_thumbnails()
+            self.refresh_thumbnails()
             return True
-        messagebox.showerror("Erro", "URL vazia")
         return False
         
     def download_url(self):
-        caminho = simpledialog.askstring("Input", "Digite a URL da imagem:", parent=self.carregar_imagem_window)
+        caminho = simpledialog.askstring("Input", "Digite a URL da imagem:", parent=self)
         if caminho:
             download = Download(url=caminho)
-            download.executa()
-            # self.refresh_thumbnails()
+            execucao = download.executa()
+            self.image_paths.append(execucao)
+            self.refresh_thumbnails()
             return True
         messagebox.showerror("Erro", "URL vazia")
         return False
