@@ -1,3 +1,4 @@
+from PIL import ImageFilter, Image, ImageOps
 class Cartoon: # Filtro cartoon
     def __init__(self, image):
         self.image = image

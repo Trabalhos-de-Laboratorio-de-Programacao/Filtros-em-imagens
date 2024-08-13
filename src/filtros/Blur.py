@@ -1,3 +1,4 @@
+from PIL import ImageFilter
 class Blur: # Filtro blur / embaçado
     def __init__(self, image):
         self.image = image
