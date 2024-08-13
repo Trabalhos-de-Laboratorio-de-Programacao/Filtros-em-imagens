@@ -4,6 +4,7 @@ from tkinter import messagebox
 import base64
 import re
 from tqdm import tqdm
+from urllib.parse import urlparse
 
 class Download:
     def __init__(self, url=None, path_arquivo=None):
@@ -13,6 +14,24 @@ class Download:
 
     def set_callback(self, callback):
         self.callback = callback
+        
+    def extrair_nome_extensao_url(self, url):
+        try:
+            parsed_url = urlparse(url)
+            if parsed_url.scheme not in ('http', 'https', 'ftp'):
+                raise ValueError(f"Unsupported protocol: {parsed_url.scheme}")
+
+            caminho_arquivo = parsed_url.path
+            if not caminho_arquivo:
+                raise ValueError("Missing file path in URL")
+
+            # Split the path to get the filename and handle query parameters
+            nome_arquivo_completo = os.path.basename(caminho_arquivo).split('?')[0]
+            nome_arquivo, extensao = os.path.splitext(nome_arquivo_completo)
+            return nome_arquivo, extensao
+
+        except Exception as ex:
+            raise ValueError(f"{str(ex)}") from ex 
 
     def executa(self):
         if self.url:
@@ -30,6 +49,7 @@ class Download:
 
     def download_from_url(self):
         try:
+            _, file_extension = self.extrair_nome_extensao_url(self.url)
             response = requests.get(self.url, stream=True)  # Habilita streaming para progresso
             response.raise_for_status()  # Verifica se houve algum erro na requisição
             total_size = int(response.headers.get('content-length', 0))  # Tamanho total do arquivo
@@ -37,8 +57,7 @@ class Download:
             if not os.path.exists(directory):
                 os.makedirs(directory)
             next_number = self.get_next_image_number(directory)
-            file_extension = os.path.splitext(self.url)[-1][1:]
-            file_name = f"image-{next_number}.{file_extension}"
+            file_name = f"image-{next_number}{file_extension}"
             destination_path = os.path.join(directory, file_name)
             self.progress_bar(destination_path, total_size, response)
             return destination_path

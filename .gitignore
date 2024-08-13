@@ -16,7 +16,7 @@ __pycache__/
 *.temp
 
 # Ignore diretórios de saída
-imagens/filtradas/
+filtradas/
 imagens/
 
 # Ignore arquivos de configuração do sistema operacional

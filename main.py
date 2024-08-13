@@ -4,14 +4,14 @@ from PIL import Image, ImageTk
 from datetime import datetime
 from src.download import *
 from src.imagem import *
+from src.aplica_filtro import *
 
 class App(Tk):
     def __init__(self):
         super().__init__()
         self.title('Filtros de imagens')
-        self.geometry('{}x{}'.format(self.winfo_screenwidth(), self.winfo_screenheight()))
+        self.geometry('{}x{}'.format(self.winfo_screenwidth()//2, self.winfo_screenheight()))
         self.wm_state('zoomed')
-        self.image_paths = self.list_files_by_date("imagens") #Carrega as imagens salvas
         # Pré-carrega action-frame para que seja reconhecido em open_image
         self.action_frame = None
         # Definindo open_button no init para que seja possível desabilitá-lo
@@ -46,10 +46,10 @@ class App(Tk):
     def create_widgets(self):
         # Menu
         menu_bar = Menu(self)
-        file_menu = Menu(menu_bar, tearoff=0, bg='lightgrey', fg='black')
+        file_menu = Menu(menu_bar, tearoff=0, bg='lightgray', fg='black')
         
         # Submenu "Carregar Imagem"
-        load_image_menu = Menu(file_menu, tearoff=0, bg='lightgrey', fg='black')
+        load_image_menu = Menu(file_menu, tearoff=0, bg='lightgray', fg='black')
         load_image_menu.add_command(label="Carregar Arquivo Local", command=self.load_local_file)
         load_image_menu.add_command(label="Download URL", command=self.download_url)
         
@@ -65,6 +65,8 @@ class App(Tk):
         self.load_thumbnails()
         
     def load_thumbnails(self):        
+        self.image_paths = self.list_files_by_date("imagens") #Carrega as imagens salvas
+        
         # Frame dos thumbnails
         self.thumbnail_frame = Frame(self, width=200)
         self.thumbnail_frame.pack(side=LEFT, fill=Y) # Com fill ocupa todo o espaço vertical
@@ -170,33 +172,45 @@ class App(Tk):
         self.filter_frame.pack(side=LEFT, fill=Y, padx=10, pady=10)
         
         # Botão "Escala de cinza"
-        grey_button = Button(self.filter_frame, text="Escala de cinza", command=lambda: self.apply_filter(image_path))
-        grey_button.pack(pady=5)
+        gray_button = Button(self.filter_frame, text="Escala de cinza", command=lambda: self.apply_filter(image_path, 'grayscale'))
+        gray_button.pack(pady=5)
         
         # Botão "Preto e branco"
-        blackwhite_button = Button(self.filter_frame, text="Preto e branco", command=lambda: self.apply_filter(image_path))
+        blackwhite_button = Button(self.filter_frame, text="Preto e branco", command=lambda: self.apply_filter(image_path, 'blackwhite'))
         blackwhite_button.pack(pady=5)
         
         # Botão "Cartoon"
-        cartoon_button = Button(self.filter_frame, text="Cartoon", command=lambda: self.apply_filter(image_path))
+        cartoon_button = Button(self.filter_frame, text="Cartoon", command=lambda: self.apply_filter(image_path, 'cartoon'))
         cartoon_button.pack(pady=5)
         
         # Botão "Negativa"
-        negative_button = Button(self.filter_frame, text="Negativa", command=lambda: self.apply_filter(image_path))
+        negative_button = Button(self.filter_frame, text="Negativa", command=lambda: self.apply_filter(image_path, 'negative'))
         negative_button.pack(pady=5)
         
         # Botão "Contorno"
-        contorno_button = Button(self.filter_frame, text="Contorno", command=lambda: self.apply_filter(image_path))
-        contorno_button.pack(pady=5)
+        contour_button = Button(self.filter_frame, text="Contorno", command=lambda: self.apply_filter(image_path, 'contour'))
+        contour_button.pack(pady=5)
         
         # Botão "Desfoque (Blur)"
-        blur_button = Button(self.filter_frame, text="Desfoque (Blur)", command=lambda: self.apply_filter(image_path))
+        blur_button = Button(self.filter_frame, text="Desfoque (Blur)", command=lambda: self.apply_filter(image_path, 'blur'))
         blur_button.pack(pady=5)
+
+    def apply_filter(self, image_path, filtro):
+        minha_imagem = Image.open(image_path)
+        image_name = os.path.splitext(os.path.basename(image_path))[0]
         
-        
-    def apply_filter(self, image_path):
-        # Implementar lógica para aplicar filtro na imagem
-        return
+        if filtro == 'grayscale':
+            AplicaFiltro.aplica_filtro_grayscale(self, minha_imagem, image_name)
+        elif filtro == 'blackwhite':
+            AplicaFiltro.aplica_filtro_blackwhite(self, minha_imagem, image_name)
+        elif filtro == 'cartoon':
+            AplicaFiltro.aplica_filtro_cartoon(self, minha_imagem, image_name)
+        elif filtro == 'negative':
+            AplicaFiltro.aplica_filtro_negative(self, minha_imagem, image_name)
+        elif filtro == 'contour':
+            AplicaFiltro.aplica_filtro_contour(self, minha_imagem, image_name)
+        elif filtro == 'blur':
+            AplicaFiltro.aplica_filtro_blur(self, minha_imagem, image_name)
 
     def delete_image(self, image_path):
         try:
@@ -217,21 +231,22 @@ class App(Tk):
             download = Download(path_arquivo=caminho)
             execucao = download.executa()
             if execucao:
-                self.image_paths.append(execucao)
-                messagebox.showinfo("SUCESSO", f"Arquivo salvo em:\n{execucao}")
+                paths = execucao.split('\n')
+                for path in paths:
+                    self.image_paths.append(path)
+                messagebox.showinfo("SUCESSO", f"Arquivo(s) salvo(s) em:\n{execucao}")
             self.refresh_thumbnails()
             return True
         return False
         
     def download_url(self):
-        caminho = simpledialog.askstring("Input", "Digite a URL da imagem:", parent=self)
+        caminho = simpledialog.askstring("Download da WEB", "Digite a URL da imagem:", parent=self)
         if caminho:
             download = Download(url=caminho)
             execucao = download.executa()
             self.image_paths.append(execucao)
             self.refresh_thumbnails()
             return True
-        messagebox.showerror("Erro", "URL vazia")
         return False
     
 if __name__ == '__main__':
