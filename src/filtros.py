@@ -1,4 +1,4 @@
-from PIL import ImageFilter, Image, ImageChops, ImageOps
+from PIL import ImageFilter, Image, ImageChops, ImageOps, ImageEnhance
 
 class GrayScale: # Filtro escala de cinza
     def __init__(self, image):
@@ -74,6 +74,30 @@ class Blur: # Filtro blur / embaçado
     def applyFilter(self):
         blurredImage = self.image.filter(ImageFilter.GaussianBlur(5))
         return blurredImage
+
+    def getOriginalImage(self):
+        return self.image
+    
+class FullHD: # Filtro estilo FullHD
+    def __init__(self, image):
+        self.image = image
+
+    def applyFilter(self):
+        # Convert to RGB if not already in that mode
+        if self.image.mode != 'RGB':
+            self.image = self.image.convert('RGB')
+        
+        # Apply a smooth filter
+        smooth_image = self.image.filter(ImageFilter.SMOOTH_MORE)
+        
+        # Enhance the image (contrast, brightness)
+        enhancer = ImageEnhance.Contrast(smooth_image)
+        enhanced_image = enhancer.enhance(1.5)
+        
+        enhancer = ImageEnhance.Brightness(enhanced_image)
+        final_image = enhancer.enhance(1.2)
+        
+        return final_image
 
     def getOriginalImage(self):
         return self.image

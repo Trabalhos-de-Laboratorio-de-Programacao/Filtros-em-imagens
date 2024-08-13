@@ -28,7 +28,7 @@ class Imagem:
         return self.minha_imagem
 
     def informacoes(self):
-        messagebox.showinfo('Informações da imagem',f'Nome: {self.nome_arquivo}\nDimensoes:{self.dimensoes()}\nFormato: {self.formato()}\nTamanho: {self.tamanho()}')
+        messagebox.showinfo('Informações da imagem',f'Nome: {self.nome_arquivo}\nDimensoes:{self.dimensoes()}\nFormato: {self.formato()}\nTamanho: {self.tamanho()} B')
         
 class WindowImageViewer:
     """
@@ -77,7 +77,7 @@ class WindowImageViewer:
         image_path: The path to the image file to be displayed.
         """
         self.canvas = Canvas(self.image_frame, relief=SUNKEN)
-        self.canvas.config(width=800, height=600, highlightthickness=0)
+        self.canvas.config(width=800, height=800, highlightthickness=0)
 
         self.sbarV = Scrollbar(self.image_frame, orient=VERTICAL)
         self.sbarH = Scrollbar(self.image_frame, orient=HORIZONTAL)
@@ -113,5 +113,8 @@ class WindowImageViewer:
 
     def destroy(self):
         # Reabilita o botão na janela principal
-        self.main.open_button.config(state="normal")
+        try:
+            self.main.open_button.config(state="normal")
+        except:
+            self.main.open_button_filtro.config(state="normal")
         self.app.destroy()
