@@ -120,6 +120,8 @@ class App(Tk):
         # Remove o frame anterior, se existir
         if hasattr(self, 'action_frame') and self.action_frame is not None:
             self.action_frame.destroy()
+        if hasattr(self, 'filter_frame') and self.filter_frame is not None:
+            self.filter_frame.destroy()
         
         # Cria um novo frame ao lado dos thumbnails
         self.action_frame = Frame(self, width=200, height=100)
@@ -138,7 +140,7 @@ class App(Tk):
         self.info_button.pack(pady=5)
         
         # Botão "Aplicar Filtro"
-        filter_button = Button(self.action_frame, text="Aplicar Filtro", command=lambda: self.apply_filter(image_path))
+        filter_button = Button(self.action_frame, text="Aplicar Filtro", command=lambda: self.select_filter(image_path))
         filter_button.pack(pady=5)
         
         # Botão "Excluir"
@@ -151,6 +153,41 @@ class App(Tk):
         
         # Cria uma instância WindowImageViewer para a imagem selecionada
         WindowImageViewer(image_name, image_path, self.action_frame, self)
+        
+    def select_filter(self, image_path):
+        image_name = os.path.basename(image_path) # Armazena o nome da imagem para que seja exibido ao abrir
+        # Remove o frame anterior, se existir
+        if hasattr(self, 'filter_frame') and self.filter_frame is not None:
+            self.filter_frame.destroy()
+        
+        # Cria um novo frame ao lado dos thumbnails
+        self.filter_frame = Frame(self, width=200, height=100)
+        self.filter_frame.pack(side=LEFT, fill=Y, padx=10, pady=10)
+        
+        # Botão "Escala de cinza"
+        grey_button = Button(self.filter_frame, text="Escala de cinza", command=lambda: self.apply_filter(image_path))
+        grey_button.pack(pady=5)
+        
+        # Botão "Preto e branco"
+        blackwhite_button = Button(self.filter_frame, text="Preto e branco", command=lambda: self.apply_filter(image_path))
+        blackwhite_button.pack(pady=5)
+        
+        # Botão "Cartoon"
+        cartoon_button = Button(self.filter_frame, text="Cartoon", command=lambda: self.apply_filter(image_path))
+        cartoon_button.pack(pady=5)
+        
+        # Botão "Negativa"
+        negative_button = Button(self.filter_frame, text="Negativa", command=lambda: self.apply_filter(image_path))
+        negative_button.pack(pady=5)
+        
+        # Botão "Contorno"
+        contorno_button = Button(self.filter_frame, text="Contorno", command=lambda: self.apply_filter(image_path))
+        contorno_button.pack(pady=5)
+        
+        # Botão "Desfoque (Blur)"
+        blur_button = Button(self.filter_frame, text="Desfoque (Blur)", command=lambda: self.apply_filter(image_path))
+        blur_button.pack(pady=5)
+        
         
     def apply_filter(self, image_path):
         # Implementar lógica para aplicar filtro na imagem
