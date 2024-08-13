@@ -61,6 +61,8 @@ class Download:
             destination_path = os.path.join(directory, file_name)
             self.progress_bar(destination_path, total_size, response)
             return destination_path
+        except Exception as e:
+            messagebox.showerror("ERRO", f"Erro ao baixar a imagem: {e}")
         except requests.exceptions.MissingSchema:
             messagebox.showerror("ERRO", "URL inválida. Certifique-se de fornecer uma URL válida.")
             raise Exception('URL inválida. Certifique-se de fornecer uma URL válida.')
