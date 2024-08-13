@@ -93,9 +93,11 @@ class App(Tk):
                 
     def display_thumbnails(self):
         for i, image_path in enumerate(self.image_paths):
+            image_name = os.path.basename(image_path)
             # Cria um thumbnail usando PIL
             # thumbnail = Image.open(image_path).resize((100, 100), Image.ANTIALIAS) # IMCOMPATÍVEL
-            thumbnail = Image.open(image_path).resize((100, 100), Image.Resampling.LANCZOS)
+            self.imagem = Imagem(i, image_name, image_path)
+            thumbnail = self.imagem.conteudo().resize((150, 100), Image.Resampling.LANCZOS)
             thumbnail_photo = ImageTk.PhotoImage(thumbnail)
             # Cria um botão com o thumbnail e caminho do arquivo
             thumbnail_button = Button(self.inner_frame, image=thumbnail_photo, command=lambda path=image_path: self.select_image(path))
@@ -130,6 +132,10 @@ class App(Tk):
         # Botão "Abrir"
         self.open_button = Button(self.action_frame, text="Abrir", command=lambda: self.open_image(image_name, image_path))
         self.open_button.pack(pady=5)
+        
+        # Botão "Exibir informações"
+        self.info_button = Button(self.action_frame, text="Informações", command=lambda: self.imagem.informacoes())
+        self.info_button.pack(pady=5)
         
         # Botão "Aplicar Filtro"
         filter_button = Button(self.action_frame, text="Aplicar Filtro", command=lambda: self.apply_filter(image_path))
@@ -185,11 +191,6 @@ class App(Tk):
         messagebox.showerror("Erro", "URL vazia")
         return False
     
-    def process_image(self, file_path):
-        # Process the image using the Imagem class
-        img = Imagem(file_path)
-        # Add further processing and display logic here
-
 if __name__ == '__main__':
     app = App()
     app.mainloop()

@@ -28,7 +28,7 @@ class Imagem:
         return self.minha_imagem
 
     def informacoes(self):
-        messagebox.showinfo(f'Nome: {self.nome_arquivo}\nDimensoes:{self.dimensoes()}\nFormato: {self.formato()}\nTamanho: {self.tamanho()}')
+        messagebox.showinfo('Informações da imagem',f'Nome: {self.nome_arquivo}\nDimensoes:{self.dimensoes()}\nFormato: {self.formato()}\nTamanho: {self.tamanho()}')
         
 class WindowImageViewer:
     """
